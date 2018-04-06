@@ -3,7 +3,7 @@ namespace Granam\SmsBranaCz;
 
 use Granam\Strict\Object\StrictObject;
 
-class ReceivedMessage extends StrictObject
+class ReceivedSmsMessage extends StrictObject
 {
     /** @var string */
     private $number;

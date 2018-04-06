@@ -4,8 +4,9 @@ declare(strict_types=1); // on PHP 7+ are standard PHP methods strict to types o
 namespace Granam\SmsBranaCz;
 
 use Granam\Strict\Object\StrictObject;
+use GuzzleHttp\Client as GuzzleHttpClient;
 
-class Client extends StrictObject
+class SmsSender extends StrictObject
 {
     /** @var \GuzzleHttp\Client */
     private $httpClient;
@@ -21,7 +22,7 @@ class Client extends StrictObject
      * @param \GuzzleHttp\Client $client
      * @throws \Granam\SmsBranaCz\Exceptions\MissingCredentials
      */
-    public function __construct(string $login, string $password, \GuzzleHttp\Client $client)
+    public function __construct(string $login, string $password, GuzzleHttpClient $client)
     {
         $login = \trim($login);
         if ($login === '') {
@@ -41,7 +42,7 @@ class Client extends StrictObject
      * Get inbox SMSes
      *
      * @param bool $delete = true
-     * @return ReceivedMessage[]
+     * @return ReceivedSmsMessage[]
      * @throws \Granam\SmsBranaCz\Exceptions\RequestToSmsBranaCzFailed
      */
     public function inbox(bool $delete = true): array
@@ -59,7 +60,7 @@ class Client extends StrictObject
             if (!$item || \trim($item->number) === '') {
                 continue;
             }
-            $receivedMessage = new ReceivedMessage(
+            $receivedMessage = new ReceivedSmsMessage(
                 (string)$item->message,
                 (string)$item->number,
                 \DateTime::createFromFormat('Ymd\THis', $item->time)
