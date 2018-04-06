@@ -4,6 +4,7 @@ declare(strict_types=1); // on PHP 7+ are standard PHP methods strict to types o
 namespace Granam\SmsBranaCz;
 
 use Granam\Strict\Object\StrictObject;
+use Granam\String\StringTools;
 use GuzzleHttp\Client as GuzzleHttpClient;
 
 class SmsSender extends StrictObject
@@ -168,6 +169,7 @@ class SmsSender extends StrictObject
      */
     public function send(string $number, string $message, \DateTime $time = null, string $sender = '', string $delivery = ''): array
     {
+        $message = $this->sanitizeMessage($message);
         $response = $this->makeRequest(
             'send_sms',
             [
@@ -183,6 +185,21 @@ class SmsSender extends StrictObject
             'id' => (string)$response->sms_id,
             'count' => (int)$response->sms_count,
         ];
+    }
+
+    /**
+     * @param string $message
+     * @return string
+     * @throws \Granam\SmsBranaCz\Exceptions\MessageTextIsEmpty
+     */
+    private function sanitizeMessage(string $message): string
+    {
+        $message = \trim($message);
+        if ($message === '') {
+            throw new Exceptions\MessageTextIsEmpty('Text of SMS can not be empty');
+        }
+
+        return StringTools::removeDiacritics($message);
     }
 
     private function getErrorMessage(int $id): string
@@ -228,6 +245,7 @@ class SmsSender extends StrictObject
      */
     public function addSms(string $number, string $message, \DateTime $time = null, string $sender = '', string $delivery = '')
     {
+        $message = $this->sanitizeMessage($message);
         $sms = $this->smsQueue->addChild('sms');
         $sms->addChild('number', $this->xmlEncode($number));
         $sms->addChild('message', $this->xmlEncode($message));
